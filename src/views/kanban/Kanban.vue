@@ -1,3 +1,11 @@
 <template>
-    <div>KANBAN vai ser aqui :)</div>
+  <div>
+		Board
+  </div>
 </template>
+
+<script>
+export default {
+  
+};
+</script>

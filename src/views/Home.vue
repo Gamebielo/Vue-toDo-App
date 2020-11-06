@@ -1,15 +1,14 @@
 <template>
     <div class="container grid-xs py-2">
-      <img class="img-responsive img-logo" src="@/assets/logo.png" alt="Logomarca">
       <!-- Chamar o método addToDo() sempre que eu submeter -->
       <form @submit.prevent="addToDo(toDo)"> <!-- prevent retira o auto reload ao submeter -->
         <div class="input-group">
           <input type="text" v-model="toDo.description" class="form-input" placeholder="Novo toDo">
-          <button class="btn btn-primary input-group-btn">Adicionar</button>
+          <button class="btn btn-primary input-group-btn" :class="{loading}">Adicionar</button>
         </div>
       </form>
       <div class="todo-list">
-        <toDo v-for="t in toDos" :key="t.id" @toggle="toggleToDo" @remove="removeToDo" :toDo="t"/>
+        <toDo v-for="t in todos" :key="t.id" @toggle="toggleToDo" @remove="removeToDo" :toDo="t"/>
       </div>
     </div>
 </template>
@@ -24,33 +23,38 @@ export default {
   },
 
   data() { // Estado do componente jogo aqui dentro
-    return {
-      toDos: [],
-      toDo: {
-        checked: false
-      }
+    return { toDo: { checked: false }, loading: false }
+  },
+
+  computed: {
+    todos() {
+      return this.$store.state.todos;
     }
   },
 
   methods: { // Ações que possuo dentro do componente
-    addToDo(toDo) {
-      toDo.id = Date.now();
-      this.toDos.push(toDo);
-      this.toDo = {checked: false};
+    async addToDo(toDo) {
+      try {
+        this.loading = true;
+        await this.$store.dispatch('addTodo', toDo);
+        this.toDo = {checked: false};
+      } finally {
+        this.loading = false;
+      }
     },
 
     toggleToDo(toDo) {
-      const index = this.toDos.findIndex(item => item.id === toDo.id);
+      const index = this.todos.findIndex(item => item.id === toDo.id);
       if(index > -1) {
-        const checked = !this.toDos[index].checked;
-        this.$set(this.toDos, index, {...this.toDos[index], checked})
+        const checked = !this.todos[index].checked;
+        this.$set(this.todos, index, {...this.todos[index], checked})
       }
     },
 
     removeToDo(toDo) {
-      const index = this.toDos.findIndex(item => item.id === toDo.id);
+      const index = this.todos.findIndex(item => item.id === toDo.id);
       if(index > -1) {
-        this.$delete(this.toDos, index);
+        this.$delete(this.todos, index);
       }
     }
   }
@@ -58,11 +62,6 @@ export default {
 </script>
 
 <style scoped>
-.img-logo {
-  max-width: 200px;
-  margin: 0 auto; /* Centralizar a imagem */
-}
-
 .todo-list {
   padding-top: 2rem; /* 1rem para o spectre são 20px */
 }
